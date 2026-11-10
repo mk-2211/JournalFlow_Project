@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JournalFlow – Smart Accounting & Budgeting</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar" aria-label="Main navigation">
+  <div class="brand"><div class="logo">J</div><div><h1>JournalFlow</h1><small>Accounting made simple</small></div></div>
+  <div class="nav-label">Overview</div>
+  <a href="#dashboard" data-page="dashboard"><span class="ic">📊</span>Dashboard</a>
+  <div class="nav-label">Record</div>
+  <a href="#entry" data-page="entry"><span class="ic">✍️</span>Add Entry</a>
+  <a href="#journal" data-page="journal"><span class="ic">📒</span>Journal Book</a>
+  <div class="nav-label">Reports</div>
+  <a href="#ledger" data-page="ledger"><span class="ic">📚</span>Ledger Accounts</a>
+  <a href="#trial" data-page="trial"><span class="ic">⚖️</span>Trial Balance</a>
+  <a href="#pl" data-page="pl"><span class="ic">📈</span>Trading &amp; P&amp;L</a>
+  <a href="#bs" data-page="bs"><span class="ic">🏦</span>Balance Sheet</a>
+  <div class="nav-label">Tools</div>
+  <a href="#budget" data-page="budget"><span class="ic">🎯</span>Budget Planner</a>
+  <a href="#export" data-page="export"><span class="ic">📤</span>Export &amp; Print</a>
+  <a href="#guide" data-page="guide"><span class="ic">❓</span>Quick Guide</a>
+  <div class="side-foot">Data is saved privately in your browser. Nothing is uploaded.</div>
+</aside>
+
+<div class="topbar"><button class="burger" id="burger" aria-label="Open menu">☰</button><strong>JournalFlow</strong></div>
+
+<main class="content">
+
+<!-- ================= DASHBOARD ================= -->
+<section class="page" id="page-dashboard">
+  <div class="page-head"><h2>Dashboard</h2><p>A live snapshot of your money. Everything here updates automatically whenever you add or delete an entry.</p></div>
+  <details class="help" open><summary>New here? How this app works</summary><ul>
+    <li><b>Step 1:</b> Go to <b>Add Entry</b> and record each money transaction (or press <b>Load sample data</b> to see a demo).</li>
+    <li><b>Step 2:</b> The app builds the Ledger, Trial Balance, Profit &amp; Loss and Balance Sheet for you.</li>
+    <li><b>Not an accountant?</b> Think of it as: money coming in (Sales, Income), money going out (Expenses), and what you own (Assets) versus owe (Liabilities).</li>
+  </ul></details>
+  <div class="grid kpis" id="kpis"></div>
+  <div class="grid two">
+    <div class="card"><h3>Income vs Expenses</h3><div id="chartBars"></div></div>
+    <div class="card"><h3>Where your expenses go</h3><div id="chartDonut"></div></div>
+    <div class="card"><h3>What you own (Assets)</h3><div id="chartAssets"></div></div>
+    <div class="card"><h3>Recent entries</h3><div id="recent"></div></div>
+  </div>
+</section>
+
+<!-- ================= ADD ENTRY ================= -->
+<section class="page" id="page-entry">
+  <div class="page-head"><h2>Add a Journal Entry</h2><p>Every transaction has two sides: one account is <b>debited</b> and another is <b>credited</b>, for the same amount. This is double-entry bookkeeping.</p></div>
+  <details class="help"><summary>Help: how do I pick Debit and Credit?</summary><ul>
+    <li><b>Asset increases</b> (cash, furniture, stock) → Debit it. <b>Asset decreases</b> → Credit it.</li>
+    <li><b>Expense incurred</b> (rent, wages, purchases) → Debit the expense.</li>
+    <li><b>Income earned</b> (sales, commission) → Credit the income.</li>
+    <li><b>Owner puts in money</b> → Debit Cash, Credit Capital. <b>Owner takes money</b> → Debit Drawings, Credit Cash.</li>
+    <li>Not sure? Tap a <b>quick template</b> below and just change the amount.</li>
+  </ul></details>
+  <div class="card">
+    <h3>Quick templates</h3>
+    <div class="chips" id="templates"></div>
+    <form class="form" id="entryForm">
+      <label>Date <input type="date" id="date" required></label>
+      <label>Debit account <select id="debit" required></select><span class="hint" id="debitHint"></span></label>
+      <label>Credit account <select id="credit" required></select><span class="hint" id="creditHint"></span></label>
+      <label>Amount (₹) <input type="number" id="amount" min="0.01" step="0.01" required placeholder="0.00"></label>
+      <label>Narration <input type="text" id="narration" placeholder="e.g. Paid shop rent"></label>
+      <div class="row" style="align-items:end">
+        <button class="btn" type="submit">Save entry</button>
+        <button class="btn ghost" type="button" id="sampleBtn">Load sample data</button>
+        <button class="btn danger" type="button" id="clearBtn">Clear all</button>
+      </div>
+    </form>
+    <p class="tip" style="margin-bottom:0">Narration is optional but helps you (and your auditor) remember why the entry was made.</p>
+  </div>
+</section>
+
+<!-- ================= JOURNAL ================= -->
+<section class="page" id="page-journal">
+  <div class="page-head"><h2>Journal Book</h2><p>The "diary" of your business. Every transaction is first written here in date order, with its debit and credit.</p></div>
+  <details class="help"><summary>Help: reading the journal</summary><ul>
+    <li>"Cash A/c Dr / To Capital A/c" means Cash is debited and Capital is credited.</li>
+    <li>Made a mistake? Delete the entry and add it again. All reports will correct themselves.</li>
+  </ul></details>
+  <div class="card">
+    <div class="row no-print" style="margin-bottom:12px"><input type="search" id="jsearch" placeholder="🔍 Search narration or account…" style="min-width:260px;flex:1" aria-label="Search journal"></div>
+    <div class="scroll" id="journalOut"></div>
+  </div>
+</section>
+
+<!-- ================= LEDGER ================= -->
+<section class="page" id="page-ledger">
+  <div class="page-head"><h2>Ledger Accounts</h2><p>The journal sorted account by account. Each account shows all its debits, credits and a running balance.</p></div>
+  <details class="help"><summary>Help: what is a ledger?</summary><ul>
+    <li><b>Dr</b> balance = the account is on the debit side (assets, expenses). <b>Cr</b> = credit side (income, liabilities, capital).</li>
+    <li>Use the filter to look at just one account.</li>
+  </ul></details>
+  <div class="row no-print" style="margin-bottom:16px"><label style="min-width:240px">Show account <select id="ledgerFilter"></select></label></div>
+  <div id="ledgerOut"></div>
+</section>
+
+<!-- ================= TRIAL ================= -->
+<section class="page" id="page-trial">
+  <div class="page-head"><h2>Trial Balance</h2><p>A checkpoint listing every account's closing balance. Total debits must equal total credits.</p></div>
+  <details class="help"><summary>Help: why does this matter?</summary><ul>
+    <li>If totals match, your entries are arithmetically consistent. If not, an entry has an error.</li>
+    <li>It is the starting point for preparing the final accounts.</li>
+  </ul></details>
+  <div class="card"><div class="scroll" id="trialOut"></div></div>
+</section>
+
+<!-- ================= P&L ================= -->
+<section class="page" id="page-pl">
+  <div class="page-head"><h2>Trading &amp; Profit &amp; Loss Account</h2><p>Shows whether the business made a profit or a loss. Gross profit is from buying and selling; net profit is what remains after all other expenses.</p></div>
+  <details class="help"><summary>Help: reading the result</summary><ul>
+    <li><b>Gross Profit</b> = Sales − direct costs (purchases, wages, carriage inwards).</li>
+    <li><b>Net Profit</b> = Gross Profit + other income − indirect expenses (rent, salaries, electricity, interest…).</li>
+    <li>Note: this version does not adjust for opening/closing stock. Enter stock adjustments through Purchases if needed.</li>
+  </ul></details>
+  <div id="plOut"></div>
+</section>
+
+<!-- ================= BS ================= -->
+<section class="page" id="page-bs">
+  <div class="page-head"><h2>Balance Sheet</h2><p>A photograph of your finances: what you own (Assets) against what you owe plus the owner's investment (Liabilities &amp; Capital).</p></div>
+  <details class="help"><summary>Help: the golden rule</summary><ul>
+    <li><b>Assets = Capital + Liabilities.</b> Both sides must total the same.</li>
+    <li>Capital shown here = opening capital − drawings + net profit.</li>
+  </ul></details>
+  <div id="bsOut"></div>
+</section>
+
+<!-- ================= BUDGET ================= -->
+<section class="page" id="page-budget">
+  <div class="page-head"><h2>Budget Planner</h2><p>Set a monthly spending limit for each expense and see how much you have actually spent. Great for personal or small-business budgeting.</p></div>
+  <details class="help"><summary>Help: how to use the budget planner</summary><ul>
+    <li>Pick an expense category, enter a monthly limit, and press <b>Set budget</b>.</li>
+    <li>Spending is read straight from your journal entries for the selected month.</li>
+    <li>Green = safe, orange = nearly used up (80%+), red = over budget.</li>
+  </ul></details>
+  <div class="grid two">
+    <div class="card">
+      <h3>Set a budget</h3>
+      <form class="form" id="budgetForm" style="grid-template-columns:1fr">
+        <label>Expense category <select id="bAcc"></select></label>
+        <label>Monthly limit (₹) <input type="number" id="bAmt" min="1" step="1" required placeholder="e.g. 10000"></label>
+        <div class="row"><button class="btn" type="submit">Set budget</button></div>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Budget vs actual</h3>
+      <label style="max-width:220px;margin-bottom:14px">Month <input type="month" id="bMonth"></label>
+      <div id="budgetOut"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EXPORT ================= -->
+<section class="page" id="page-export">
+  <div class="page-head"><h2>Export &amp; Print</h2><p>Take your data with you: download for Excel, back it up, restore it, or print any report as a clean paper copy or PDF.</p></div>
+  <div class="grid two">
+    <div class="card hover"><h3>📄 Download CSV</h3><p class="tip">Opens in Excel or Google Sheets. Contains your full journal.</p><button class="btn" id="expCsv">Download journal CSV</button></div>
+    <div class="card hover"><h3>💾 Backup &amp; restore</h3><p class="tip">Save all entries and budgets as a file, and load them again later or on another device.</p>
+      <div class="row"><button class="btn" id="expJson">Download backup</button><button class="btn ghost" id="impBtn">Restore backup</button><input type="file" id="impFile" accept=".json" hidden></div></div>
+    <div class="card hover"><h3>🖨️ Print a report</h3><p class="tip">Choose "Save as PDF" in the print window to create a PDF.</p>
+      <div class="row">
+        <button class="btn ghost" data-print="trial">Trial balance</button>
+        <button class="btn ghost" data-print="pl">Trading &amp; P&amp;L</button>
+        <button class="btn ghost" data-print="bs">Balance sheet</button>
+        <button class="btn ghost" data-print="journal">Journal</button>
+      </div></div>
+  </div>
+</section>
+
+<!-- ================= GUIDE ================= -->
+<section class="page" id="page-guide">
+  <div class="page-head"><h2>Quick Guide &amp; Glossary</h2><p>Plain-language help for first-time users, students and anyone new to accounting.</p></div>
+  <div class="grid two">
+    <div class="card"><h3>Account types and where they go</h3>
+      <dl class="glossary" id="typeGlossary"></dl></div>
+    <div class="card"><h3>Common words</h3>
+      <dl class="glossary">
+        <dt>Debit (Dr)</dt><dd>Left side of an account. Increases assets and expenses.</dd>
+        <dt>Credit (Cr)</dt><dd>Right side. Increases income, liabilities and capital.</dd>
+        <dt>Journal</dt><dd>The first record of every transaction, in date order.</dd>
+        <dt>Ledger</dt><dd>All transactions grouped under each account.</dd>
+        <dt>Trial balance</dt><dd>List of all balances proving debits = credits.</dd>
+        <dt>Gross profit</dt><dd>Sales minus the direct cost of goods sold.</dd>
+        <dt>Net profit</dt><dd>What is left after all expenses.</dd>
+        <dt>Drawings</dt><dd>Money the owner takes out for personal use.</dd>
+      </dl></div>
+  </div>
+</section>
+
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
